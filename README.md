@@ -1,22 +1,26 @@
 # mq-message-consumer
 
 ```mermaid
-flowchart TD
-    A[JMS Queue Listener] -->|Step 1: Receive Message| B[JMS Transaction]
-    B --> C[Message Processing Flow]
-    C -->|1. Enrichment Service<br>2. Validation Service| D[Deduplication Check]
-    D -->|Check Message ID<br>- If Found: Ignore and Exit<br>- If Not Found: Proceed| E[JPA Transaction]
-    E -->|Step 2: Save to Database<br>- Insert Data into Application Table<br>- Insert Message ID into Deduplication Table| F[End of JPA Transaction Boundary]
-    F --> G[JMS Acknowledgment (Tx)]
-    G -->|Step 3: Acknowledge JMS Message<br>- JMS Transaction Commit<br>- If JMS Commit Fails: Message Redelivery| H[End]
+graph TD;
+    A[JMS Queue Listener] --> B[JMS Transaction];
+    B --> C[Message Processing Flow];
+    C --> D[Enrichment Service];
+    C --> E[Validation Service];
+    D --> F[Deduplication Check];
+    E --> F[Deduplication Check];
+    F --> G{Deduplication Table Check};
+    G -->|Found| H[Ignore and Exit];
+    G -->|Not Found| I[Proceed];
+    I --> J[JPA Transaction];
+    J --> K[Save to Database];
+    K --> L[Insert Data into Application Table];
+    K --> M[Insert Message ID into Deduplication Table];
+    K --> N[Commit Database Transaction];
+    N --> O{Database Commit Success};
+    O -->|Success| P[End of JPA Transaction Boundary];
+    O -->|Failure| Q[Rollback JPA Transaction];
+    Q --> P;
 ```
-
-### Steps to Use It
-1. Copy the above code snippet.
-2. Paste it into your `README.md` file.
-3. Ensure that your platform supports rendering Mermaid diagrams (like GitHub or other Markdown viewers that support it).
-
-This will make the diagram visually appealing and easier to understand while maintaining a clear process flow. Let me know if you need further assistance!
 
 
 
